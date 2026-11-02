@@ -2,6 +2,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using netCore.DTOs;
 using Services;
+using Microsoft.AspNetCore.Authorization;
 
 namespace netCore.Controllers
 {
@@ -41,6 +42,7 @@ namespace netCore.Controllers
         }
 
         // POST: api/movies
+        [Authorize]
         [HttpPost]
         public async Task<IActionResult> CreateMovie(CreateMovieDto dto)
         {
@@ -53,6 +55,7 @@ namespace netCore.Controllers
         }
 
         // PUT: api/movies/5
+        [Authorize]
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateMovie(int id, UpdateMovieDto dto)
         {
@@ -65,6 +68,7 @@ namespace netCore.Controllers
         }
 
         // DELETE: api/movies/5
+        [Authorize]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteMovie(int id)
         {

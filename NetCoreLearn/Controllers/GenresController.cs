@@ -2,6 +2,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using netCore.DTOs;
 using Services;
+using Microsoft.AspNetCore.Authorization;
 
 namespace netCore.Controllers
 {
@@ -41,6 +42,7 @@ namespace netCore.Controllers
         }
 
         // POST: api/genres
+        [Authorize]
         [HttpPost]
         public async Task<IActionResult> CreateGenre(CreateGenreDto dto)
         {
@@ -53,6 +55,7 @@ namespace netCore.Controllers
         }
 
         // PUT: api/genres/5
+        [Authorize]
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateGenre(int id, UpdateGenreDto dto)
         {
@@ -65,6 +68,7 @@ namespace netCore.Controllers
         }
 
         // DELETE: api/genres/5
+        [Authorize]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteGenre(int id)
         {

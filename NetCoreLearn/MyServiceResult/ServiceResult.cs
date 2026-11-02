@@ -46,6 +46,29 @@ namespace NetCoreLearn.MyServiceResult
                 Message = message
             };
         }
+
+        // Helper method for custom failure (e.g., 409 Conflict, 401 Unauthorized)
+        public static ServiceResult<T> Failure(string message, int statusCode = 400)
+        {
+            return new ServiceResult<T>
+            {
+                Success = false,
+                StatusCode = statusCode,
+                Message = message
+            };
+        }
+
+        // Helper method for custom success (e.g., 201 Created, 200 Ok)
+        public static ServiceResult<T> Okay(T data, string? message = null, int statusCode = 200)
+        {
+            return new ServiceResult<T>
+            {
+                Success = true,
+                StatusCode = statusCode,
+                Data = data,
+                Message = message
+            };
+        }
     }
 
 
