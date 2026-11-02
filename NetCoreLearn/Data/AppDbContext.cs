@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using EFCoreMovieCRUD.Models;
 using Microsoft.EntityFrameworkCore;
 using netCore.Models;
@@ -18,16 +19,34 @@ public class AppDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
-        // One-to-Many: Director -> Movies
-        modelBuilder.Entity<Movie>()
-            .HasOne(m => m.Director)
-            .WithMany(d => d.Movies)
-            .HasForeignKey(m => m.DirectorId)
-            .OnDelete(DeleteBehavior.Restrict);
+        // 1. Fluent API: Ensure genre names are unique
+        modelBuilder.Entity<Genre>(genreEntity =>
+        {
+            genreEntity.HasIndex(g => g.Name).IsUnique();
+        });
 
-        // Many-to-Many: Movie <-> Genre
+        // 2. Fluent API: One-to-Many relationship between Director and Movies
+        modelBuilder.Entity<Movie>(movieEntity =>
+        {
+            movieEntity.HasOne(m => m.Director)
+                .WithMany(d => d.Movies)
+                .HasForeignKey(m => m.DirectorId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // 3. Fluent API: Explicit Many-to-Many relationship between Movie and Genre
         modelBuilder.Entity<Movie>()
             .HasMany(m => m.Genres)
-            .WithMany(g => g.Movies);
+            .WithMany(g => g.Movies)
+            .UsingEntity<Dictionary<string, object>>(
+                "MovieGenre",
+                j => j.HasOne<Genre>().WithMany().HasForeignKey("GenreId"),
+                j => j.HasOne<Movie>().WithMany().HasForeignKey("MovieId"),
+                j =>
+                {
+                    j.HasKey("MovieId", "GenreId");
+                    j.ToTable("MovieGenres");
+                }
+            );
     }
 }

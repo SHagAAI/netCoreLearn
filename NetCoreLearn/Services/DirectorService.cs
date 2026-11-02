@@ -91,7 +91,7 @@ namespace Services
             await _directorRepo.DeleteDirectorAsync(id);
             await _directorRepo.SaveChangesAsync();
 
-            return ServiceResult.Ok("Director deleted");
+            return ServiceResult.Ok($"Director with ID {id} was deleted successfully.");
         }
     }
 }

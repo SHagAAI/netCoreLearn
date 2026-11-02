@@ -82,7 +82,7 @@ namespace Services
             await _genreRepo.DeleteGenreAsync(id);
             await _genreRepo.SaveChangesAsync();
 
-            return ServiceResult.Ok("Genre deleted successfully.");
+            return ServiceResult.Ok($"Genre with ID {id} was deleted successfully.");
         }
     }
 }

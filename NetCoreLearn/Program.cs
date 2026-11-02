@@ -44,12 +44,7 @@ builder.Services.AddScoped<IMovieService, MovieService>();
 
 var app = builder.Build();
 
-// Automatically ensure the SQLite database and schema exist on startup
-using (var scope = app.Services.CreateScope())
-{
-    var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    dbContext.Database.EnsureCreated();
-}
+// Note: Using EF Core Migrations (run 'Update-Database' or 'dotnet ef database update' to apply schema)
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

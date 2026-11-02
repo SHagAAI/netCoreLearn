@@ -12,9 +12,7 @@ public class CreateMovieValidator : AbstractValidator<CreateMovieDto>
             .Length(1, 200).WithMessage("Movie title must be between 1 and 200 characters.");
 
         RuleFor(x => x.ReleaseYear)
-        .NotEmpty()
-            
-            .WithMessage($"Release year can't be empty");
+            .NotEmpty().WithMessage("Release year can't be empty.");
 
         RuleFor(x => x.DirectorId)
             .GreaterThan(0).WithMessage("A valid DirectorId is required.");
@@ -33,8 +31,7 @@ public class UpdateMovieValidator : AbstractValidator<UpdateMovieDto>
             .Length(1, 200).WithMessage("Movie title must be between 1 and 200 characters.");
 
         RuleFor(x => x.ReleaseYear)
-            .InclusiveBetween(1888, DateTime.UtcNow.Year + 5)
-            .WithMessage($"Release year must be between 1888 and {DateTime.UtcNow.Year + 5}.");
+            .NotEmpty().WithMessage("Release year can't be empty.");
 
         RuleFor(x => x.DirectorId)
             .GreaterThan(0).WithMessage("A valid DirectorId is required.");

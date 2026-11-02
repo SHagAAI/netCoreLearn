@@ -73,7 +73,7 @@ namespace netCore.Controllers
             {
                 return StatusCode(result.StatusCode, result.Message);
             }
-            return NoContent();
+            return Ok(new { message = result.Message });
         }
     }
 }

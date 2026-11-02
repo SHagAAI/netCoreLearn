@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using netCore.Data;
@@ -18,23 +17,12 @@ namespace NetCoreLearn.Repository
 
         public async Task<IEnumerable<Genre>> GetAllGenresAsync()
         {
-            return await _context.Genres
-                .Include(g => g.Movies)
-                .ToListAsync();
+            return await _context.Genres.ToListAsync();
         }
 
         public async Task<Genre?> GetGenreByIdAsync(int id)
         {
-            return await _context.Genres
-                .Include(g => g.Movies)
-                .FirstOrDefaultAsync(g => g.Id == id);
-        }
-
-        public async Task<List<Genre>> GetGenresByIdsAsync(IEnumerable<int> ids)
-        {
-            return await _context.Genres
-                .Where(g => ids.Contains(g.Id))
-                .ToListAsync();
+            return await _context.Genres.FindAsync(id);
         }
 
         public async Task InsertGenreAsync(Genre genre)

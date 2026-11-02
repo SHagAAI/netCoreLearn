@@ -61,8 +61,16 @@ namespace Services
                 return ServiceResult<MovieResponseDto>.BadRequest($"Director with ID {dto.DirectorId} does not exist.");
             }
 
-            // 2. Fetch Genres
-            var genres = await _genreRepo.GetGenresByIdsAsync(dto.GenreIds);
+            // 2. Fetch Genres by IDs
+            var genres = new List<Genre>();
+            foreach (var genreId in dto.GenreIds)
+            {
+                var genre = await _genreRepo.GetGenreByIdAsync(genreId);
+                if (genre != null)
+                {
+                    genres.Add(genre);
+                }
+            }
 
             // 3. Map DTO -> Movie (Genres ignored by AutoMapper profile)
             var movie = _mapper.Map<Movie>(dto);
@@ -73,12 +81,13 @@ namespace Services
 
             // Reload movie with navigation properties for complete response
             var createdMovie = await _movieRepo.GetMovieByIdAsync(movie.Id);
-            var responseDto = _mapper.Map<MovieResponseDto>(createdMovie ?? movie);
+            // var responseDto = _mapper.Map<MovieResponseDto>(createdMovie ?? movie);
+            var responseDto = _mapper.Map<MovieResponseDto>(createdMovie);
 
             return ServiceResult<MovieResponseDto>.Ok(responseDto);
         }
 
-        public async Task<ServiceResult<MovieResponseDto>> UpdateMovieAsync(int id, UpdateMovieDto dto)
+        public async Task<ServiceResult<MovieResponseDto>> UpdateMovieAsync(int id, UpdateMovieDto updateMovieDto)
         {
             var movie = await _movieRepo.GetMovieByIdAsync(id);
             if (movie == null)
@@ -87,17 +96,27 @@ namespace Services
             }
 
             // 1. Verify Director exists
-            var director = await _directorRepo.GetDirectorByIdAsync(dto.DirectorId);
+            var director = await _directorRepo.GetDirectorByIdAsync(updateMovieDto.DirectorId);
             if (director == null)
             {
-                return ServiceResult<MovieResponseDto>.BadRequest($"Director with ID {dto.DirectorId} does not exist.");
+                return ServiceResult<MovieResponseDto>.BadRequest($"Director with ID {updateMovieDto.DirectorId} does not exist.");
             }
 
-            // 2. Fetch Genres
-            var genres = await _genreRepo.GetGenresByIdsAsync(dto.GenreIds);
+            // 2. Fetch Genres by IDs
+            var genres = new List<Genre>();
+            foreach (var genreId in updateMovieDto.GenreIds)
+            {
+                var genre = await _genreRepo.GetGenreByIdAsync(genreId);
+                if (genre != null)
+                {
+                    genres.Add(genre);
+                }
+            }
 
             // 3. Update properties via AutoMapper
-            _mapper.Map(dto, movie);
+            _mapper.Map(updateMovieDto, movie);
+            
+            // update genre manually here 
             movie.Genres = genres;
 
             _movieRepo.UpdateMovie(movie);
@@ -118,7 +137,7 @@ namespace Services
             await _movieRepo.DeleteMovieAsync(id);
             await _movieRepo.SaveChangesAsync();
 
-            return ServiceResult.Ok("Movie deleted successfully.");
+            return ServiceResult.Ok($"Movie with ID {id} was deleted successfully.");
         }
     }
 }
