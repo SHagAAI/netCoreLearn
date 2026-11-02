@@ -21,6 +21,7 @@ namespace NetCoreLearn.Repository
         public async Task<IEnumerable<Director>> GetAllDirectorsAsync()
         {
             return await _context.Directors
+                .AsNoTracking()
                 .Include(d => d.Movies)
                 .ToListAsync();
         }

@@ -17,7 +17,9 @@ namespace NetCoreLearn.Repository
 
         public async Task<IEnumerable<Genre>> GetAllGenresAsync()
         {
-            return await _context.Genres.ToListAsync();
+            return await _context.Genres
+                        .AsNoTracking()
+                        .ToListAsync();
         }
 
         public async Task<Genre?> GetGenreByIdAsync(int id)
