@@ -50,6 +50,9 @@ namespace NetCoreLearn.Services
                 FullName = request.FullName
             };
 
+
+
+
             // 4. Hash password and save via Identity
             var result = await _userManager.CreateAsync(user, request.Password);
             if (!result.Succeeded)
@@ -61,14 +64,26 @@ namespace NetCoreLearn.Services
                 );
             }
 
-            // 5. Generate JWT token
-            var token = _tokenService.GenerateJwtToken(user);
+            // ROLES
+            var roleToAssign = string.Equals(request.Role, "Director", StringComparison.OrdinalIgnoreCase)
+                ? "Director"
+                : "User";
+
+            await _userManager.AddToRoleAsync(user, roleToAssign);
+
+            // 5. Retrieve roles and generate JWT token with role claims
+            var roles = await _userManager.GetRolesAsync(user);
+
+            // 6. Generate JWT token
+            var token = _tokenService.GenerateJwtToken(user, roles);
+
 
             var response = new AuthResponseDto
             {
                 Token = token,
                 Username = user.UserName ?? string.Empty,
-                Email = user.Email ?? string.Empty
+                Email = user.Email ?? string.Empty,
+                Roles = roles
             };
 
             return ServiceResult<AuthResponseDto>.Okay(
@@ -93,14 +108,17 @@ namespace NetCoreLearn.Services
                 );
             }
 
+            var roles = await _userManager.GetRolesAsync(user);
+            
             // 3. Generate token
-            var token = _tokenService.GenerateJwtToken(user);
-
+            var token = _tokenService.GenerateJwtToken(user, roles);
+            
             var response = new AuthResponseDto
             {
                 Token = token,
                 Username = user.UserName ?? string.Empty,
-                Email = user.Email ?? string.Empty
+                Email = user.Email ?? string.Empty,
+                Roles = roles
             };
 
             return ServiceResult<AuthResponseDto>.Okay(

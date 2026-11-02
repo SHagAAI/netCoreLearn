@@ -42,7 +42,7 @@ namespace netCore.Controllers
         }
 
         // POST: api/directors
-        [Authorize]
+        [Authorize(Roles = "Director,User")]
         [HttpPost]
         public async Task<IActionResult> CreateDirector(CreateDirectorDto newDirectorDto)
         {
@@ -55,7 +55,7 @@ namespace netCore.Controllers
         }
 
         // PUT: api/directors/5
-        [Authorize]
+        [Authorize(Roles = "Director,User")]
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateDirector(int id, UpdateDirectorDto updateDirectorDto)
         {
@@ -68,7 +68,7 @@ namespace netCore.Controllers
         }
 
         // DELETE: api/directors/5
-        [Authorize]
+        [Authorize(Roles = "Director")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteDirector(int id)
         {

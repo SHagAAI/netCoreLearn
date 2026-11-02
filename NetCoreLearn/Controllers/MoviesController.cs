@@ -42,7 +42,7 @@ namespace netCore.Controllers
         }
 
         // POST: api/movies
-        [Authorize]
+        [Authorize(Roles = "Director,User")]
         [HttpPost]
         public async Task<IActionResult> CreateMovie(CreateMovieDto dto)
         {
@@ -55,7 +55,7 @@ namespace netCore.Controllers
         }
 
         // PUT: api/movies/5
-        [Authorize]
+        [Authorize(Roles = "Director,User")]
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateMovie(int id, UpdateMovieDto dto)
         {
@@ -68,7 +68,7 @@ namespace netCore.Controllers
         }
 
         // DELETE: api/movies/5
-        [Authorize]
+        [Authorize(Roles = "Director")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteMovie(int id)
         {

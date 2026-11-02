@@ -42,7 +42,7 @@ namespace netCore.Controllers
         }
 
         // POST: api/genres
-        [Authorize]
+        [Authorize(Roles = "Director,User")]
         [HttpPost]
         public async Task<IActionResult> CreateGenre(CreateGenreDto dto)
         {
@@ -55,7 +55,7 @@ namespace netCore.Controllers
         }
 
         // PUT: api/genres/5
-        [Authorize]
+        [Authorize(Roles = "Director,User")]
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateGenre(int id, UpdateGenreDto dto)
         {
@@ -68,7 +68,7 @@ namespace netCore.Controllers
         }
 
         // DELETE: api/genres/5
-        [Authorize]
+        [Authorize(Roles = "Director")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteGenre(int id)
         {

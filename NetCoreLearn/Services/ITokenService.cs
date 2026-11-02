@@ -8,6 +8,6 @@ namespace NetCoreLearn.Services
 {
     public interface ITokenService
     {
-        string GenerateJwtToken(ApplicationUser user);
+        string GenerateJwtToken(ApplicationUser user, IList<string> roles);
     }
 }

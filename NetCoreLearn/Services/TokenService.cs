@@ -19,7 +19,7 @@ namespace NetCoreLearn.Services
             _configuration = configuration;
         }
 
-        public string GenerateJwtToken(ApplicationUser user)
+        public string GenerateJwtToken(ApplicationUser user, IList<string> roles)
         {
             var claims = new List<Claim>
             {
@@ -28,6 +28,14 @@ namespace NetCoreLearn.Services
                 new Claim(ClaimTypes.Name, user.UserName ?? string.Empty),
                 new Claim(ClaimTypes.Email, user.Email ?? string.Empty)
             };
+
+            // add ROLES
+            foreach (var role in roles)
+            {
+                claims.Add(new Claim(ClaimTypes.Role, role));
+            }
+
+
 
             // Read settings from .env via IConfiguration
             var key = _configuration["JWT_KEY"];
