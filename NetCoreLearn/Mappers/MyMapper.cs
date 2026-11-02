@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using AutoMapper;
 using EFCoreMovieCRUD.Models;
 using netCore.DTOs;
@@ -11,33 +7,31 @@ namespace NetCoreLearn.Mappers
 {
     public class MyMapper : Profile
     {
-        // 1. Director mappings
-
-
         public MyMapper()
         {
-            // 1. Director Mapping
+            // 1. Director Mappings
             CreateMap<CreateDirectorDto, Director>();
             CreateMap<UpdateDirectorDto, Director>();
+            
+            CreateMap<Director, DirectorResponseDto>(); // for going out. for return ?
 
-            // Maps Database Entity -> Response DTO
-            // for response
-            CreateMap<Director, DirectorResponseDto>();
-
-
-
-            // 2. Genre mappings
+            // 2. Genre Mappings
             CreateMap<CreateGenreDto, Genre>();
             CreateMap<UpdateGenreDto, Genre>();
 
-            // 3. Movie mappings
+            CreateMap<Genre, GenreResponseDto>();
+            CreateMap<Genre, GenreSummaryDto>();
+
+            // 3. Movie Mappings
             CreateMap<CreateMovieDto, Movie>()
-                .ForMember(dest => dest.Genres, opt => opt.Ignore()); // genres leave out, handled in service ? 
+                .ForMember(dest => dest.Genres, opt => opt.Ignore());
             CreateMap<UpdateMovieDto, Movie>()
                 .ForMember(dest => dest.Genres, opt => opt.Ignore());
-            
-            // for response ?
+
             CreateMap<Movie, MovieSummaryDto>();
+            CreateMap<Movie, MovieResponseDto>()
+                .ForMember(dest => dest.DirectorName, opt => opt.MapFrom(src => src.Director != null ? src.Director.Name : string.Empty))
+                .ForMember(dest => dest.Genres, opt => opt.MapFrom(src => src.Genres));
         }
     }
 }

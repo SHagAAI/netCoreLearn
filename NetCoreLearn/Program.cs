@@ -29,13 +29,18 @@ builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-
-// Registers AUTOMAPPER
+// 5. Registers AutoMapper
 builder.Services.AddAutoMapper(typeof(Program));
 
-// 
-builder.Services.AddScoped<IDirectorService, DirectorService>();
+// 6. Dependency Injection: Repositories & Services
 builder.Services.AddScoped<IDirectorRepository, DirectorRepository>();
+builder.Services.AddScoped<IDirectorService, DirectorService>();
+
+builder.Services.AddScoped<IGenreRepository, GenreRepository>();
+builder.Services.AddScoped<IGenreService, GenreService>();
+
+builder.Services.AddScoped<IMovieRepository, MovieRepository>();
+builder.Services.AddScoped<IMovieService, MovieService>();
 
 var app = builder.Build();
 

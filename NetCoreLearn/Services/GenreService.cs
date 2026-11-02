@@ -1,75 +1,88 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using EFCoreMovieCRUD.Data;
-using EFCoreMovieCRUD.Models;
-using Microsoft.EntityFrameworkCore;
+using AutoMapper;
+using netCore.DTOs;
+using netCore.Models;
+using NetCoreLearn.MyServiceResult;
+using NetCoreLearn.Repository;
 
-namespace EFCoreMovieCRUD.Services
+namespace Services
 {
-    public class GenreService
+    public class GenreService : IGenreService
     {
-        private readonly FilmDbContext _context;
+        private readonly IGenreRepository _genreRepo;
+        private readonly IMapper _mapper;
 
-        public GenreService(FilmDbContext context)
+        public GenreService(IGenreRepository genreRepo, IMapper mapper)
         {
-            _context = context;
+            _genreRepo = genreRepo;
+            _mapper = mapper;
         }
 
-        // CREATE NEW GENRE
-        public async Task<Genre> CreateGenreAsync(Genre gnr)
+        public async Task<ServiceResult<IEnumerable<GenreResponseDto>>> GetAllGenresAsync()
         {
-            var gnrExist = await _context.Genres.FirstOrDefaultAsync(g => g.Name == gnr.Name);
-
-            if (gnrExist != null)
+            var genres = await _genreRepo.GetAllGenresAsync();
+            if (!genres.Any())
             {
-                throw new InvalidOperationException("Genre name already exists, please choose other name");
+                return ServiceResult<IEnumerable<GenreResponseDto>>.NotFound("No genres found in the database.");
             }
 
-            _context.Genres.Add(gnr);
-            await _context.SaveChangesAsync();
-            return gnr;
-
+            var responseDtos = _mapper.Map<IEnumerable<GenreResponseDto>>(genres);
+            return ServiceResult<IEnumerable<GenreResponseDto>>.Ok(responseDtos);
         }
 
-        public async Task<Genre?> UpdateGenreAsync(int id, Genre updateGenre)
+        public async Task<ServiceResult<GenreResponseDto>> GetGenreByIdAsync(int id)
         {
-            var gnrExist = await _context.Genres.FirstOrDefaultAsync(g => g.Id == id);
-
-            if (gnrExist == null)
+            var genre = await _genreRepo.GetGenreByIdAsync(id);
+            if (genre == null)
             {
-                return null;
+                return ServiceResult<GenreResponseDto>.NotFound($"Genre with ID {id} was not found.");
             }
 
-            gnrExist.Name = updateGenre.Name;
-            gnrExist.Movies = updateGenre.Movies;
-
-            await _context.SaveChangesAsync();
-            return gnrExist;
+            var responseDto = _mapper.Map<GenreResponseDto>(genre);
+            return ServiceResult<GenreResponseDto>.Ok(responseDto);
         }
 
-        public async Task<bool> DeleteGenreAsync(int id)
+        public async Task<ServiceResult<GenreResponseDto>> CreateGenreAsync(CreateGenreDto createGenreDto)
         {
-            var gnrExist = await _context.Genres.FirstOrDefaultAsync(g => g.Id == id);
+            var genre = _mapper.Map<Genre>(createGenreDto);
 
-            if (gnrExist == null)
+            await _genreRepo.InsertGenreAsync(genre);
+            await _genreRepo.SaveChangesAsync();
+
+            var responseDto = _mapper.Map<GenreResponseDto>(genre);
+            return ServiceResult<GenreResponseDto>.Ok(responseDto);
+        }
+
+        public async Task<ServiceResult<GenreResponseDto>> UpdateGenreAsync(int id, UpdateGenreDto updateGenreDto)
+        {
+            var genre = await _genreRepo.GetGenreByIdAsync(id);
+            if (genre == null)
             {
-                return false;
+                return ServiceResult<GenreResponseDto>.NotFound($"Genre with ID {id} was not found.");
             }
 
-            _context.Genres.Remove(gnrExist);
-            await _context.SaveChangesAsync();
-            return true;
-        }
-        public async Task<List<Genre>> GetAllGenreAsync()
-        {
-            return await _context.Genres.ToListAsync();
+            _mapper.Map(updateGenreDto, genre);
+            _genreRepo.UpdateGenre(genre);
+            await _genreRepo.SaveChangesAsync();
+
+            var responseDto = _mapper.Map<GenreResponseDto>(genre);
+            return ServiceResult<GenreResponseDto>.Ok(responseDto);
         }
 
-        public async Task<Genre?> GetGenreByIdAsync(int id)
+        public async Task<ServiceResult> DeleteGenreAsync(int id)
         {
-            return await _context.Genres.FirstOrDefaultAsync(g => g.Id == id);
+            var genre = await _genreRepo.GetGenreByIdAsync(id);
+            if (genre == null)
+            {
+                return ServiceResult.NotFound($"Genre with ID {id} was not found.");
+            }
+
+            await _genreRepo.DeleteGenreAsync(id);
+            await _genreRepo.SaveChangesAsync();
+
+            return ServiceResult.Ok("Genre deleted successfully.");
         }
     }
 }

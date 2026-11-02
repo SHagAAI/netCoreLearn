@@ -1,119 +1,124 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using EFCoreMovieCRUD.Data;
-using EFCoreMovieCRUD.Models;
-using Microsoft.EntityFrameworkCore;
+using AutoMapper;
+using netCore.DTOs;
+using netCore.Models;
+using NetCoreLearn.MyServiceResult;
+using NetCoreLearn.Repository;
 
-namespace EFCoreMovieCRUD.Services
+namespace Services
 {
-    public class MovieService
+    public class MovieService : IMovieService
     {
-        private readonly FilmDbContext _context;
+        private readonly IMovieRepository _movieRepo;
+        private readonly IDirectorRepository _directorRepo;
+        private readonly IGenreRepository _genreRepo;
+        private readonly IMapper _mapper;
 
-        public MovieService(FilmDbContext context)
+        public MovieService(
+            IMovieRepository movieRepo,
+            IDirectorRepository directorRepo,
+            IGenreRepository genreRepo,
+            IMapper mapper)
         {
-            _context = context;
+            _movieRepo = movieRepo;
+            _directorRepo = directorRepo;
+            _genreRepo = genreRepo;
+            _mapper = mapper;
         }
 
-        // add new movie
-        public async Task<Movie> CreateMovieAsync(Movie mov)
+        public async Task<ServiceResult<IEnumerable<MovieResponseDto>>> GetAllMoviesAsync()
         {
-            _context.Movies.Add(mov);
-
-            await _context.SaveChangesAsync();
-            Console.WriteLine($"Added movie {mov.Title}");
-            return mov;
-
-        }
-
-        // update movie
-        public async Task<Movie?> UpdateMovieAsync(int id, Movie updateMovie)
-        {
-
-            var movieExist = await _context.Movies.FindAsync(id);
-
-            if (movieExist == null)
+            var movies = await _movieRepo.GetAllMoviesAsync();
+            if (!movies.Any())
             {
-                return null;
+                return ServiceResult<IEnumerable<MovieResponseDto>>.NotFound("No movies found in the database.");
             }
 
-            movieExist.Title = updateMovie.Title;
-            movieExist.ReleaseYear = updateMovie.ReleaseYear;
-            movieExist.Genres = updateMovie.Genres;
-            movieExist.DirectorId = updateMovie.DirectorId;
-            movieExist.Director = updateMovie.Director;
-
-            await _context.SaveChangesAsync();
-            return movieExist;
-
-            // var movieExist = await _context.Movies.FindAsync(mov.Id);
-
-            // if (movieExist == null)
-            // {
-            //     return false;
-            // }
-
-            // _context.Entry(movieExist).CurrentValues.SetValues(mov);
-
-            // await _context.SaveChangesAsync();
-            // return true;
-
+            var responseDtos = _mapper.Map<IEnumerable<MovieResponseDto>>(movies);
+            return ServiceResult<IEnumerable<MovieResponseDto>>.Ok(responseDtos);
         }
 
-        // delete movie
-        public async Task<bool> DeleteMovieAsync(int id)
+        public async Task<ServiceResult<MovieResponseDto>> GetMovieByIdAsync(int id)
         {
-            var movieExist = await _context.Movies.FindAsync(id);
-
-            if (movieExist == null)
+            var movie = await _movieRepo.GetMovieByIdAsync(id);
+            if (movie == null)
             {
-                return false;
+                return ServiceResult<MovieResponseDto>.NotFound($"Movie with ID {id} was not found.");
             }
 
-            _context.Movies.Remove(movieExist);
-            await _context.SaveChangesAsync();
-            return true;
+            var responseDto = _mapper.Map<MovieResponseDto>(movie);
+            return ServiceResult<MovieResponseDto>.Ok(responseDto);
         }
 
-
-        // GET        
-        // ALL movie
-        public async Task<List<Movie>> GetAllMovieAsync()
+        public async Task<ServiceResult<MovieResponseDto>> CreateMovieAsync(CreateMovieDto dto)
         {
-            return await _context.Movies
-            .Include(m => m.Director)
-            .Include(m => m.Genres)
-            .ToListAsync();
+            // 1. Verify Director exists
+            var director = await _directorRepo.GetDirectorByIdAsync(dto.DirectorId);
+            if (director == null)
+            {
+                return ServiceResult<MovieResponseDto>.BadRequest($"Director with ID {dto.DirectorId} does not exist.");
+            }
+
+            // 2. Fetch Genres
+            var genres = await _genreRepo.GetGenresByIdsAsync(dto.GenreIds);
+
+            // 3. Map DTO -> Movie (Genres ignored by AutoMapper profile)
+            var movie = _mapper.Map<Movie>(dto);
+            movie.Genres = genres;
+
+            await _movieRepo.InsertMovieAsync(movie);
+            await _movieRepo.SaveChangesAsync();
+
+            // Reload movie with navigation properties for complete response
+            var createdMovie = await _movieRepo.GetMovieByIdAsync(movie.Id);
+            var responseDto = _mapper.Map<MovieResponseDto>(createdMovie ?? movie);
+
+            return ServiceResult<MovieResponseDto>.Ok(responseDto);
         }
 
-        // movie by ID
-        public async Task<Movie?> GetMovieByIdAsync(int id)
+        public async Task<ServiceResult<MovieResponseDto>> UpdateMovieAsync(int id, UpdateMovieDto dto)
         {
-            return await _context.Movies
-            .Include(m => m.Director)
-            .Include(m => m.Genres)
-            .FirstOrDefaultAsync(m => m.Id == id);
+            var movie = await _movieRepo.GetMovieByIdAsync(id);
+            if (movie == null)
+            {
+                return ServiceResult<MovieResponseDto>.NotFound($"Movie with ID {id} was not found.");
+            }
+
+            // 1. Verify Director exists
+            var director = await _directorRepo.GetDirectorByIdAsync(dto.DirectorId);
+            if (director == null)
+            {
+                return ServiceResult<MovieResponseDto>.BadRequest($"Director with ID {dto.DirectorId} does not exist.");
+            }
+
+            // 2. Fetch Genres
+            var genres = await _genreRepo.GetGenresByIdsAsync(dto.GenreIds);
+
+            // 3. Update properties via AutoMapper
+            _mapper.Map(dto, movie);
+            movie.Genres = genres;
+
+            _movieRepo.UpdateMovie(movie);
+            await _movieRepo.SaveChangesAsync();
+
+            var responseDto = _mapper.Map<MovieResponseDto>(movie);
+            return ServiceResult<MovieResponseDto>.Ok(responseDto);
         }
 
-        // GET MOVIE BY GENRE
-        public async Task<List<Movie>> GetMovieByGenreAsync(int genreId)
+        public async Task<ServiceResult> DeleteMovieAsync(int id)
         {
-            return await _context.Movies
-                .Include(m => m.Director)
-                .Include(m => m.Genres)
-                .Where(m => m.Genres.Any(g => g.Id == genreId))
-                .ToListAsync();
-        }
+            var movie = await _movieRepo.GetMovieByIdAsync(id);
+            if (movie == null)
+            {
+                return ServiceResult.NotFound($"Movie with ID {id} was not found.");
+            }
 
-        public async Task<List<Movie>> GetMovieByDirectorAsync(int directorId)
-        {
-            return await _context.Movies
-            .Include(m => m.Genres)
-            .Where(m=>m.DirectorId == directorId)
-            .ToListAsync();
-        }
+            await _movieRepo.DeleteMovieAsync(id);
+            await _movieRepo.SaveChangesAsync();
 
+            return ServiceResult.Ok("Movie deleted successfully.");
+        }
     }
 }

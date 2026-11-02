@@ -1,85 +1,79 @@
-using AutoMapper;
-using EFCoreMovieCRUD.Models;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using netCore.Data;
 using netCore.DTOs;
-using netCore.Models;
 using Services;
 
-namespace netCore.Controllers;
-
-[ApiController]
-[Route("api/[controller]")]
-public class DirectorsController : ControllerBase
+namespace netCore.Controllers
 {
-    private readonly IDirectorService _directorService;
-    public DirectorsController(IDirectorService directorService)
+    [ApiController]
+    [Route("api/[controller]")]
+    public class DirectorsController : ControllerBase
     {
-        _directorService = directorService;
-    }
+        private readonly IDirectorService _directorService;
 
-    // GET: api/directors
-    [HttpGet]
-    public async Task<ActionResult<IEnumerable<Director>>> GetAllDirector()
-    {
-        var result = await _directorService.GetAllDirectorAsync();
-        return Ok(result.Data);
-    }
-
-    // GET: api/directors/5
-    [HttpGet("{id}")]
-    public async Task<ActionResult<Director>> GetDirectorById(int id)
-    {
-        var result = await _directorService.GetDirectorByIdAsync(id);
-
-        if (!result.Success)
+        public DirectorsController(IDirectorService directorService)
         {
-            return StatusCode(result.StatusCode, result.Message);
+            _directorService = directorService;
         }
 
-        return Ok(result.Data);
-    }
-
-    // POST: api/directors
-    [HttpPost]
-    public async Task<ActionResult<Director>> CreateDirector(CreateDirectorDto newDirectorDto)
-    {
-        var result = await _directorService.CreateDirectorAsync(newDirectorDto);
-
-        if (!result.Success)
+        // GET: api/directors
+        [HttpGet]
+        public async Task<IActionResult> GetAllDirector()
         {
-            return StatusCode(result.StatusCode, result.Message);
+            var result = await _directorService.GetAllDirectorAsync();
+            if (!result.Success)
+            {
+                return StatusCode(result.StatusCode, result.Message);
+            }
+            return Ok(result.Data);
         }
 
-        // return CreatedAtAction(nameof(GetDirector), new { id = director.Id }, director);
-        return CreatedAtAction(nameof(GetDirectorById), new { id = result.Data!.Id }, result.Data);
-    }
-
-    // PUT: api/directors/5
-    [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateDirector(int id, UpdateDirectorDto updateDirectorDto)
-    {
-        var result = await _directorService.UpdateDirectorAsync(id, updateDirectorDto);
-        if (!result.Success)
+        // GET: api/directors/5
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetDirectorById(int id)
         {
-            return StatusCode(result.StatusCode, result.Message);
+            var result = await _directorService.GetDirectorByIdAsync(id);
+            if (!result.Success)
+            {
+                return StatusCode(result.StatusCode, result.Message);
+            }
+            return Ok(result.Data);
         }
 
-        return Ok(result.Data);
-    }
-
-    // DELETE: api/directors/5
-    [HttpDelete("{id}")]
-    public async Task<IActionResult> DeleteDirector(int id)
-    {
-        var result = await _directorService.DeleteDirectorAsync(id);
-        if (!result.Success)
+        // POST: api/directors
+        [HttpPost]
+        public async Task<IActionResult> CreateDirector(CreateDirectorDto newDirectorDto)
         {
-            return StatusCode(result.StatusCode, result.Message);
+            var result = await _directorService.CreateDirectorAsync(newDirectorDto);
+            if (!result.Success)
+            {
+                return StatusCode(result.StatusCode, result.Message);
+            }
+            return CreatedAtAction(nameof(GetDirectorById), new { id = result.Data!.Id }, result.Data);
         }
 
-        return Ok(result.Message);
-    }
+        // PUT: api/directors/5
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateDirector(int id, UpdateDirectorDto updateDirectorDto)
+        {
+            var result = await _directorService.UpdateDirectorAsync(id, updateDirectorDto);
+            if (!result.Success)
+            {
+                return StatusCode(result.StatusCode, result.Message);
+            }
+            return Ok(result.Data);
+        }
 
+        // DELETE: api/directors/5
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteDirector(int id)
+        {
+            var result = await _directorService.DeleteDirectorAsync(id);
+            if (!result.Success)
+            {
+                return StatusCode(result.StatusCode, result.Message);
+            }
+            return NoContent();
+        }
+    }
 }

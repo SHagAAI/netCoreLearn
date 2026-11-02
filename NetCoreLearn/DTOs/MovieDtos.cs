@@ -22,3 +22,13 @@ public class MovieSummaryDto
     public string Title { get; set; } = string.Empty;
     public int ReleaseYear { get; set; }
 }
+
+public class MovieResponseDto
+{
+    public int Id { get; set; }
+    public string Title { get; set; } = string.Empty;
+    public int ReleaseYear { get; set; }
+    public int DirectorId { get; set; }
+    public string DirectorName { get; set; } = string.Empty;
+    public List<GenreSummaryDto> Genres { get; set; } = new();
+}
