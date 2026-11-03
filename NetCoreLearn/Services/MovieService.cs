@@ -81,6 +81,7 @@ namespace Services
 
             // Reload movie with navigation properties for complete response
             var createdMovie = await _movieRepo.GetMovieByIdAsync(movie.Id);
+            
             // var responseDto = _mapper.Map<MovieResponseDto>(createdMovie ?? movie);
             var responseDto = _mapper.Map<MovieResponseDto>(createdMovie);
 
@@ -115,7 +116,7 @@ namespace Services
 
             // 3. Update properties via AutoMapper
             _mapper.Map(updateMovieDto, movie);
-            
+
             // update genre manually here 
             movie.Genres = genres;
 
@@ -138,6 +139,28 @@ namespace Services
             await _movieRepo.SaveChangesAsync();
 
             return ServiceResult.Ok($"Movie with ID {id} was deleted successfully.");
+        }
+
+        public async Task<ServiceResult<IEnumerable<MovieResponseDto>>> GetMoviesByGenreIdAsync(int genreId)
+        {
+            // 1. Verify the genre exists
+            var genre = await _genreRepo.GetGenreByIdAsync(genreId);
+            if (genre == null)
+            {
+                return ServiceResult<IEnumerable<MovieResponseDto>>.NotFound($"Genre with ID {genreId} was not found.");
+            }
+
+            // 2. Fetch movies linked to this genre
+            var movies = await _movieRepo.GetMoviesByGenreIdAsync(genreId);
+            if (!movies.Any())
+            {
+                return ServiceResult<IEnumerable<MovieResponseDto>>.NotFound($"No movies found under genre '{genre.Name}'.");
+            }
+
+            // 3. Map to Response DTOs
+            var responseDtos = _mapper.Map<IEnumerable<MovieResponseDto>>(movies);
+            
+            return ServiceResult<IEnumerable<MovieResponseDto>>.Ok(responseDtos);
         }
     }
 }

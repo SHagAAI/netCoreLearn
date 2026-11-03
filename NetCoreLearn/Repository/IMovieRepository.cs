@@ -11,6 +11,8 @@ namespace NetCoreLearn.Repository
         Task InsertMovieAsync(Movie movie);
         void UpdateMovie(Movie movie);
         Task DeleteMovieAsync(int id);
+        Task<IEnumerable<Movie>> GetMoviesByGenreIdAsync(int genreId);
         Task SaveChangesAsync();
+
     }
 }

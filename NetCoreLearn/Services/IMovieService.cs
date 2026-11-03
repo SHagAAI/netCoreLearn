@@ -12,5 +12,8 @@ namespace Services
         Task<ServiceResult<MovieResponseDto>> CreateMovieAsync(CreateMovieDto dto);
         Task<ServiceResult<MovieResponseDto>> UpdateMovieAsync(int id, UpdateMovieDto dto);
         Task<ServiceResult> DeleteMovieAsync(int id);
+
+        // 
+        Task<ServiceResult<IEnumerable<MovieResponseDto>>> GetMoviesByGenreIdAsync(int genreId);
     }
 }

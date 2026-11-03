@@ -67,6 +67,18 @@ namespace netCore.Controllers
             return Ok(result.Data);
         }
 
+        // GET: api/movies/genre/5
+        [HttpGet("genre/{genreId}")]
+        public async Task<IActionResult> GetMoviesByGenre(int genreId)
+        {
+            var result = await _movieService.GetMoviesByGenreIdAsync(genreId);
+            if (!result.Success)
+            {
+                return StatusCode(result.StatusCode, result.Message);
+            }
+            return Ok(result.Data);
+        }
+
         // DELETE: api/movies/5
         [Authorize(Roles = "Director")]
         [HttpDelete("{id}")]
@@ -79,5 +91,6 @@ namespace netCore.Controllers
             }
             return Ok(new { message = result.Message });
         }
+
     }
 }

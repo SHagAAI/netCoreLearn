@@ -9,7 +9,9 @@ namespace NetCoreLearn.Services
 {
     public interface IAuthService
     {
-         Task<ServiceResult<AuthResponseDto>> RegisterAsync(RegisterDto request);
+        Task<ServiceResult<AuthResponseDto>> RegisterAsync(RegisterDto request);
         Task<ServiceResult<AuthResponseDto>> LoginAsync(LoginDto request);
+
+        Task<ServiceResult> DeleteAccountAsync(string userId);
     }
 }

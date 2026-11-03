@@ -71,7 +71,7 @@ namespace NetCoreLearn.Services
 
             await _userManager.AddToRoleAsync(user, roleToAssign);
 
-            // 5. Retrieve roles and generate JWT token with role claims
+            // 5. Retrieve roles, add it in generate JWT token for role claims
             var roles = await _userManager.GetRolesAsync(user);
 
             // 6. Generate JWT token
@@ -109,10 +109,10 @@ namespace NetCoreLearn.Services
             }
 
             var roles = await _userManager.GetRolesAsync(user);
-            
+
             // 3. Generate token
             var token = _tokenService.GenerateJwtToken(user, roles);
-            
+
             var response = new AuthResponseDto
             {
                 Token = token,
@@ -127,5 +127,27 @@ namespace NetCoreLearn.Services
                 statusCode: 200
             );
         }
+
+        public async Task<ServiceResult> DeleteAccountAsync(string userId)
+        {
+            // 1. Find the user by ID
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                return ServiceResult.NotFound("User account was not found.");
+            }
+
+            // 2. Delete the user
+            // (Microsoft Identity automatically deletes their role rows in AspNetUserRoles as well!)
+            var result = await _userManager.DeleteAsync(user);
+            if (!result.Succeeded)
+            {
+                var errors = string.Join("; ", result.Errors.Select(e => e.Description));
+                return ServiceResult.BadRequest($"Failed to delete account: {errors}");
+            }
+
+            return ServiceResult.Ok("User account deleted successfully.");
+        }
+
     }
 }

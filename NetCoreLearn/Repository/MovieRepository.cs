@@ -51,6 +51,16 @@ namespace NetCoreLearn.Repository
             }
         }
 
+        public async Task<IEnumerable<Movie>> GetMoviesByGenreIdAsync(int genreId)
+        {
+            return await _context.Movies
+                .AsNoTracking()
+                .Include(m => m.Director)
+                .Include(m => m.Genres)
+                .Where(m => m.Genres.Any(g => g.Id == genreId))
+                .ToListAsync();
+        }
+
         public async Task SaveChangesAsync()
         {
             await _context.SaveChangesAsync();

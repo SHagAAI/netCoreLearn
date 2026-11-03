@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using System.Text;
 using System.Text.Json.Serialization;
 using FluentValidation;
@@ -22,7 +23,9 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")
         ?? "Data Source=FilmDatabase.db"));
 
-// Add Microsoft Identity
+
+// Add MICROSOFT IDENTITY
+
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 {
     //  password rules 
@@ -33,7 +36,11 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
     options.Password.RequiredLength = 6;
     options.User.RequireUniqueEmail = true;
 })
-.AddEntityFrameworkStores<AppDbContext>()
+
+// bridge between UserManager and your SQLite database tables. 
+// so UserManager acknowledge AppDbContext for storing data
+.AddEntityFrameworkStores<AppDbContext>() 
+
 .AddDefaultTokenProviders();
 
 
@@ -62,6 +69,28 @@ builder.Services.AddAuthentication(options =>
         ValidAudience = jwtAudience,
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
     };
+
+
+    // After verifying the token signature, check if this user actually still exists in AspNetUsers. 
+    // If they were deleted, reject the request immediately"
+    options.Events = new JwtBearerEvents();
+    options.Events.OnTokenValidated = async context =>
+    {
+
+        var userManager = context.HttpContext.RequestServices.GetRequiredService<UserManager<ApplicationUser>>();
+
+        // var userId = context.Principal?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        var userId = context.Principal?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+        if (string.IsNullOrEmpty(userId) || await userManager.FindByIdAsync(userId) == null)
+        {
+            // Account deleted or doesn't exist -> Kill the request!
+            context.Fail("Unauthorized: User account no longer exists.");
+        }
+
+    };
+
+
 });
 
 // Add Controllers and handle cyclic references for relationships
@@ -83,6 +112,7 @@ builder.Services.AddSwaggerGen(options =>
     options.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo { Title = "Movie Catalog API", Version = "v1" });
 
     // Enable JWT authorization in Swagger
+    // Define Bearer scheme
     options.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
     {
         Name = "Authorization",
@@ -96,15 +126,16 @@ builder.Services.AddSwaggerGen(options =>
     options.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
     {
         {
+            // key value map
             new Microsoft.OpenApi.Models.OpenApiSecurityScheme
             {
                 Reference = new Microsoft.OpenApi.Models.OpenApiReference
                 {
                     Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
-                    Id = "Bearer"
+                    Id = "Bearer" // connect this to security definition
                 }
             },
-            Array.Empty<string>()
+            Array.Empty<string>() // we leave it empty because we dont use OAuth ? 
         }
     });
 });

@@ -25,6 +25,7 @@ namespace Services
 
         public async Task<ServiceResult<DirectorResponseDto>> CreateDirectorAsync(CreateDirectorDto newDirectorDto)
         {
+            // create new Director. Use values from the dto, based on our mapping 
             var director = _mapper.Map<Director>(newDirectorDto);
 
             await _directorRepo.InsertDirectorAsync(director);
@@ -71,6 +72,7 @@ namespace Services
 
 
 
+            // Update an existing object in place   
             // director.Name = dto.Name;
             _mapper.Map(updateDirectorDto, director);
             await _directorRepo.SaveChangesAsync();

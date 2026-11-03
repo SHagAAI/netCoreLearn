@@ -35,6 +35,7 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
                 .WithMany(d => d.Movies)
                 .HasForeignKey(m => m.DirectorId)
                 .OnDelete(DeleteBehavior.Restrict);
+                // .OnDelete(DeleteBehavior.Cascade);
         });
 
         // 3. Fluent API: Explicit Many-to-Many relationship between Movie and Genre
