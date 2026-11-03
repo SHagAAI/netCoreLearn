@@ -86,6 +86,7 @@ namespace Services
             var responseDto = _mapper.Map<MovieResponseDto>(createdMovie);
 
             return ServiceResult<MovieResponseDto>.Ok(responseDto);
+            // return ServiceResult<MovieResponseDto>.Okay(responseDto, "Movie Created Succesfully", statusCode:201);
         }
 
         public async Task<ServiceResult<MovieResponseDto>> UpdateMovieAsync(int id, UpdateMovieDto updateMovieDto)

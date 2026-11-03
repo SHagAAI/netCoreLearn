@@ -52,6 +52,7 @@ namespace netCore.Controllers
                 return StatusCode(result.StatusCode, result.Message);
             }
             return CreatedAtAction(nameof(GetMovieById), new { id = result.Data!.Id }, result.Data);
+            // return StatusCode(result.StatusCode, result.Data);
         }
 
         // PUT: api/movies/5

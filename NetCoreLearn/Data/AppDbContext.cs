@@ -35,6 +35,8 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
                 .WithMany(d => d.Movies)
                 .HasForeignKey(m => m.DirectorId)
                 .OnDelete(DeleteBehavior.Restrict);
+                
+                // delete director will delete all movie belong to that dir
                 // .OnDelete(DeleteBehavior.Cascade);
         });
 

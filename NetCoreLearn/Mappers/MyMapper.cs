@@ -35,10 +35,13 @@ namespace NetCoreLearn.Mappers
             // the rest map automatically
             CreateMap<CreateMovieDto, Movie>()
                 .ForMember(dest => dest.Genres, opt => opt.Ignore());
+
             CreateMap<UpdateMovieDto, Movie>()
                 .ForMember(dest => dest.Genres, opt => opt.Ignore());
 
+            // data from db, all matched
             CreateMap<Movie, MovieSummaryDto>();
+
             CreateMap<Movie, MovieResponseDto>()
                 .ForMember(dest => dest.DirectorName, opt => opt.MapFrom(src => src.Director != null ? src.Director.Name : string.Empty))
                 .ForMember(dest => dest.Genres, opt => opt.MapFrom(src => src.Genres));

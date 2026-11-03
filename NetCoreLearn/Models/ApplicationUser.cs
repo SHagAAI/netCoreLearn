@@ -9,7 +9,7 @@ namespace NetCoreLearn.Models
     public class ApplicationUser : IdentityUser
     {
         //  IdentityUser
-        // inherit all id, username,, email, password
+        // inherit all id, username,, email, password automatically
          public string FullName { get; set; } = string.Empty;
     }
 }

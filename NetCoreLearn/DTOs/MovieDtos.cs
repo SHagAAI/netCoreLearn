@@ -16,6 +16,7 @@ public class UpdateMovieDto
     public List<int> GenreIds { get; set; } = new();
 }
 
+// displaying movie inside director operation
 public class MovieSummaryDto
 {
     public int Id { get; set; }
